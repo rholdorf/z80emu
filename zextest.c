@@ -78,20 +78,30 @@ static void emulate(char *filename)
         unsigned char lastF = 0;
         int lastPC = 0;
         int counter = 0;
+        int beginAt = 0;
+        int endAt = 1000;
         do
         {
                 total += Z80Emulate(&context.state, 2, &context);
-                // state->registers.byte[Z80_F]
-                if(lastF != context.state.registers.byte[Z80_F])
+                if(counter > beginAt)
                 {
-                        printf("\nPC: %04x F:%02x opcode:%02x%02x", lastPC, context.state.registers.byte[Z80_F], context.memory[lastPC], context.memory[lastPC+1]);
+                        //if(lastF != context.state.registers.byte[Z80_F])
+                        {
+                                printf("\nPC: %04x F:%02x opcode:%02x%02x%02x%02x %04x", 
+                                lastPC, 
+                                context.state.registers.byte[Z80_F], 
+                                context.memory[lastPC], 
+                                context.memory[lastPC+1], 
+                                context.memory[lastPC+2], 
+                                context.memory[lastPC+3],
+                                context.state.registers.word[Z80_BC]);
+                        }
+                        lastF = context.state.registers.byte[Z80_F];
+                        lastPC = context.state.pc;
                 }
-                lastF = context.state.registers.byte[Z80_F];
-                lastPC = context.state.pc;
-
                 counter++;
 
-                if(counter>1000)
+                if(counter > endAt)
                         exit(0);
         } while (!context.is_done);
 
