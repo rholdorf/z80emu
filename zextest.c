@@ -18,14 +18,21 @@
 #define CYCLES_PER_STEP (Z80_CPU_SPEED / 50)
 #define MAXIMUM_STRING_LENGTH 100
 
-static void emulate(char *filename);
+static void emulate(char *filename, int beginAt, int endAt);
 
-int main(void)
+int main(int argc, char *argv[])
 {
+        int beginAt;
+        int endAt;
+
+        sscanf(argv[1], "%d", &beginAt);
+        sscanf(argv[2], "%d", &endAt);
+
+        printf("%d %d\n", beginAt, endAt);
+
         time_t start, stop;
         start = time(NULL);
-        emulate("testfiles/zexdoc.com");
-        emulate("testfiles/zexall.com");
+        emulate("testfiles/zexdoc.com", beginAt, endAt);
         stop = time(NULL);
         printf("Emulating zexdoc and zexall took a total of %d second(s).\n",
                (int)(stop - start));
@@ -35,7 +42,7 @@ int main(void)
 
 /* Emulate "zexdoc.com" or "zexall.com". */
 
-static void emulate(char *filename)
+static void emulate(char *filename, int beginAt, int endAt)
 {
         FILE *file;
         long l;
@@ -75,33 +82,35 @@ static void emulate(char *filename)
         Z80Reset(&context.state);
         context.state.pc = 0x100;
         total = 0.0;
-        unsigned char lastF = 0;
         int lastPC = 0;
         int counter = 0;
-        int beginAt = 0;
-        int endAt = 1000;
+
+        //printf("%02x\n", context.memory[450]);
         do
         {
                 total += Z80Emulate(&context.state, 2, &context);
-                if(counter > beginAt)
+                if(counter >= beginAt)
                 {
+                        // Console.Write($"\nPC: {lastPC.ToString("x4")} LOC:{loc} AF:{f} BC:{bc} DE:{de} HL:{hl}");
                         //if(lastF != context.state.registers.byte[Z80_F])
                         {
-                                printf("\nPC: %04x F:%02x opcode:%02x%02x%02x%02x %04x", 
+                                printf("\nLPC: %04x LOC:%02x%02x%02x%02x AF:%04x BC:%04x DE:%04x HL:%04x", 
                                 lastPC, 
-                                context.state.registers.byte[Z80_F], 
                                 context.memory[lastPC], 
                                 context.memory[lastPC+1], 
                                 context.memory[lastPC+2], 
                                 context.memory[lastPC+3],
-                                context.state.registers.word[Z80_BC]);
+                                context.state.registers.word[Z80_AF],
+                                context.state.registers.word[Z80_BC],
+                                context.state.registers.word[Z80_DE],
+                                context.state.registers.word[Z80_HL]);
                         }
-                        lastF = context.state.registers.byte[Z80_F];
+
                         lastPC = context.state.pc;
                 }
                 counter++;
 
-                if(counter > endAt)
+                if(counter >= endAt)
                         exit(0);
         } while (!context.is_done);
 
