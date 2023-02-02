@@ -655,8 +655,7 @@ static int emulate(Z80_STATE *state,
                         BC = bc;
 #ifndef Z80_DOCUMENTED_FLAGS_ONLY
                         n += A;
-                        f |= n & Z80_X_FLAG; // seta o X (bit 3)
-                        //               4                     5
+                        f |= n & Z80_X_FLAG;
                         f |= (n << (Z80_Y_FLAG_SHIFT - 1)) & Z80_Y_FLAG; 
 #endif
                         F = f;

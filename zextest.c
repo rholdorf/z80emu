@@ -22,13 +22,15 @@ static void emulate(char *filename, int beginAt, int endAt);
 
 int main(int argc, char *argv[])
 {
-        int beginAt;
-        int endAt;
+        int beginAt = 0;
+        int endAt = 0;
 
-        sscanf(argv[1], "%d", &beginAt);
-        sscanf(argv[2], "%d", &endAt);
-
-        printf("%d %d\n", beginAt, endAt);
+        if(argc == 3)
+        {
+                sscanf(argv[1], "%d", &beginAt);
+                sscanf(argv[2], "%d", &endAt);
+        }
+        printf("DEBUG: %d %d\n", beginAt, endAt);
 
         time_t start, stop;
         start = time(NULL);
@@ -84,15 +86,17 @@ static void emulate(char *filename, int beginAt, int endAt)
         total = 0.0;
         int lastPC = 0;
         int counter = 0;
-
+        int instruction = 0;
         //printf("%02x\n", context.memory[450]);
         do
         {
+                instruction = context.memory[context.state.pc];
                 total += Z80Emulate(&context.state, 2, &context);
-                if(counter >= beginAt)
+
+                /*if(instruction == 0x27)*/
                 {
-                        // Console.Write($"\nPC: {lastPC.ToString("x4")} LOC:{loc} AF:{f} BC:{bc} DE:{de} HL:{hl}");
-                        //if(lastF != context.state.registers.byte[Z80_F])
+                        counter++;
+                        if(endAt > 0 && counter >= beginAt)
                         {
                                 printf("\nLPC: %04x LOC:%02x%02x%02x%02x AF:%04x BC:%04x DE:%04x HL:%04x", 
                                 lastPC, 
@@ -105,13 +109,12 @@ static void emulate(char *filename, int beginAt, int endAt)
                                 context.state.registers.word[Z80_DE],
                                 context.state.registers.word[Z80_HL]);
                         }
-
-                        lastPC = context.state.pc;
                 }
-                counter++;
 
-                if(counter >= endAt)
-                        exit(0);
+                lastPC = context.state.pc;
+                if(endAt > 0 && counter >= endAt)
+                        break;
+
         } while (!context.is_done);
 
         printf("\n%.0f cycle(s) emulated.\n"
