@@ -84,7 +84,7 @@ static void emulate(char *filename, int beginAt, int endAt)
     do
     {
         instruction = context.memory[context.state.pc];
-        total += Z80Emulate(&context.state, 2, &context);
+        total += Z80Emulate(&context.state, 1, &context);
 
         counter++;
         if (endAt > 0 && counter >= beginAt)

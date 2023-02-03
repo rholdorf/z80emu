@@ -906,7 +906,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
                 * Z80_PREFIX_FAILSAFE is defined, but that
                 * is an unlikely pathological case.
                 */
-                number_cycles += 4;
+                /*number_cycles += 4;*/
                 break;
 #endif
             }
@@ -919,7 +919,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
                 goto stop_emulation;
 #else
                 /* See comment for DI. */
-                number_cycles += 4;
+                /*number_cycles += 4;*/
                 break;
 #endif
             }
