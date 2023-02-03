@@ -7,13 +7,11 @@
  *
  * This code is free, do whatever you want with it.
  */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include "zextest.h"
 #include "z80emu.h"
-
 #define Z80_CPU_SPEED 4000000 /* In Hz. */
 #define CYCLES_PER_STEP (Z80_CPU_SPEED / 50)
 #define MAXIMUM_STRING_LENGTH 100
@@ -22,138 +20,121 @@ static void emulate(char *filename, int beginAt, int endAt);
 
 int main(int argc, char *argv[])
 {
-        int beginAt = 0;
-        int endAt = 0;
+    int beginAt = 0;
+    int endAt = 0;
+    if (argc == 3)
+    {
+        sscanf(argv[1], "%d", &beginAt);
+        sscanf(argv[2], "%d", &endAt);
+    }
 
-        if(argc == 3)
-        {
-                sscanf(argv[1], "%d", &beginAt);
-                sscanf(argv[2], "%d", &endAt);
-        }
-        printf("DEBUG: %d %d\n", beginAt, endAt);
+    printf("DEBUG: %d %d\n", beginAt, endAt);
+    time_t start, stop;
+    start = time(NULL);
+    emulate("testfiles/zexdoc.com", beginAt, endAt);
+    stop = time(NULL);
+    printf("Emulating zexdoc and zexall took a total of %d second(s).\n", (int)(stop - start));
 
-        time_t start, stop;
-        start = time(NULL);
-        emulate("testfiles/zexdoc.com", beginAt, endAt);
-        stop = time(NULL);
-        printf("Emulating zexdoc and zexall took a total of %d second(s).\n",
-               (int)(stop - start));
-
-        return EXIT_SUCCESS;
+    return EXIT_SUCCESS;
 }
 
 /* Emulate "zexdoc.com" or "zexall.com". */
 
 static void emulate(char *filename, int beginAt, int endAt)
 {
-        FILE *file;
-        long l;
-        ZEXTEST context;
-        double total;
+    FILE *file;
+    long l;
+    ZEXTEST context;
+    double total;
 
-        printf("Testing \"%s\"...\n", filename);
-        if ((file = fopen(filename, "rb")) == NULL)
+    printf("Testing \"%s\"...\n", filename);
+    if ((file = fopen(filename, "rb")) == NULL)
+    {
+        fprintf(stderr, "Can't open file!\n");
+        exit(EXIT_FAILURE);
+    }
+
+    fseek(file, 0, SEEK_END);
+    l = ftell(file);
+    fseek(file, 0, SEEK_SET);
+    fread(context.memory + 0x100, 1, l, file);
+    fclose(file);
+
+    /* Patch the memory of the program. Reset at 0x0000 is trapped by an
+     * OUT which will stop emulation. CP/M bdos call 5 is trapped by an IN.
+     * See Z80_INPUT_BYTE() and Z80_OUTPUT_BYTE() definitions in z80user.h.
+     */
+    context.memory[0] = 0xd3; /* OUT N, A */
+    context.memory[1] = 0x00;
+
+    context.memory[5] = 0xdb; /* IN A, N */
+    context.memory[6] = 0x00;
+    context.memory[7] = 0xc9; /* RET */
+
+    context.is_done = 0;
+
+    /* Emulate. */
+    Z80Reset(&context.state);
+    context.state.pc = 0x100;
+    total = 0.0;
+    int lastPC = 0;
+    int counter = 0;
+    int instruction = 0;
+
+    do
+    {
+        instruction = context.memory[context.state.pc];
+        total += Z80Emulate(&context.state, 2, &context);
+
+        counter++;
+        if (endAt > 0 && counter >= beginAt)
         {
-                fprintf(stderr, "Can't open file!\n");
-                exit(EXIT_FAILURE);
+            printf("\nLPC: %04x LOC:%02x%02x%02x%02x AF:%04x BC:%04x DE:%04x HL:%04x",
+                lastPC,
+                context.memory[lastPC],
+                context.memory[lastPC + 1],
+                context.memory[lastPC + 2],
+                context.memory[lastPC + 3],
+                context.state.registers.word[Z80_AF],
+                context.state.registers.word[Z80_BC],
+                context.state.registers.word[Z80_DE],
+                context.state.registers.word[Z80_HL]);
         }
-        fseek(file, 0, SEEK_END);
-        l = ftell(file);
 
-        fseek(file, 0, SEEK_SET);
-        fread(context.memory + 0x100, 1, l, file);
+        lastPC = context.state.pc;
+        if (endAt > 0 && counter >= endAt)
+            break;
 
-        fclose(file);
+    } while (!context.is_done);
 
-        /* Patch the memory of the program. Reset at 0x0000 is trapped by an
-         * OUT which will stop emulation. CP/M bdos call 5 is trapped by an IN.
-         * See Z80_INPUT_BYTE() and Z80_OUTPUT_BYTE() definitions in z80user.h.
-         */
-
-        context.memory[0] = 0xd3; /* OUT N, A */
-        context.memory[1] = 0x00;
-
-        context.memory[5] = 0xdb; /* IN A, N */
-        context.memory[6] = 0x00;
-        context.memory[7] = 0xc9; /* RET */
-
-        context.is_done = 0;
-
-        /* Emulate. */
-
-        Z80Reset(&context.state);
-        context.state.pc = 0x100;
-        total = 0.0;
-        int lastPC = 0;
-        int counter = 0;
-        int instruction = 0;
-        //printf("%02x\n", context.memory[450]);
-        do
-        {
-                instruction = context.memory[context.state.pc];
-                total += Z80Emulate(&context.state, 2, &context);
-
-                /*if(instruction == 0x27)*/
-                {
-                        counter++;
-                        if(endAt > 0 && counter >= beginAt)
-                        {
-                                printf("\nLPC: %04x LOC:%02x%02x%02x%02x AF:%04x BC:%04x DE:%04x HL:%04x", 
-                                lastPC, 
-                                context.memory[lastPC], 
-                                context.memory[lastPC+1], 
-                                context.memory[lastPC+2], 
-                                context.memory[lastPC+3],
-                                context.state.registers.word[Z80_AF],
-                                context.state.registers.word[Z80_BC],
-                                context.state.registers.word[Z80_DE],
-                                context.state.registers.word[Z80_HL]);
-                        }
-                }
-
-                lastPC = context.state.pc;
-                if(endAt > 0 && counter >= endAt)
-                        break;
-
-        } while (!context.is_done);
-
-        printf("\n%.0f cycle(s) emulated.\n"
-               "For a Z80 running at %.2fMHz, "
-               "that would be %d second(s) or %.2f hour(s).\n",
-               total,
-               Z80_CPU_SPEED / 1000000.0,
-               (int)(total / Z80_CPU_SPEED),
-               total / ((double)3600 * Z80_CPU_SPEED));
+    printf("\n%.0f cycle(s) emulated.\n"
+        "For a Z80 running at %.2fMHz, "
+        "that would be %d second(s) or %.2f hour(s).\n",
+        total,
+        Z80_CPU_SPEED / 1000000.0,
+        (int)(total / Z80_CPU_SPEED),
+        total / ((double)3600 * Z80_CPU_SPEED));
 }
 
 /* Emulate CP/M bdos call 5 functions 2 (output character on screen) and 9
  * (output $-terminated string to screen).
  */
-
 void SystemCall(ZEXTEST *zextest)
 {
-        if (zextest->state.registers.byte[Z80_C] == 2)
+    if (zextest->state.registers.byte[Z80_C] == 2)
+        printf("%c", zextest->state.registers.byte[Z80_E]);
+    else if (zextest->state.registers.byte[Z80_C] == 9)
+    {
+        int i, c;
 
-                printf("%c", zextest->state.registers.byte[Z80_E]);
-
-        else if (zextest->state.registers.byte[Z80_C] == 9)
+        for (i = zextest->state.registers.word[Z80_DE], c = 0; zextest->memory[i] != '$'; i++)
         {
-
-                int i, c;
-
-                for (i = zextest->state.registers.word[Z80_DE], c = 0;
-                     zextest->memory[i] != '$';
-                     i++)
-                {
-
-                        printf("%c", zextest->memory[i & 0xffff]);
-                        if (c++ > MAXIMUM_STRING_LENGTH)
-                        {
-
-                                fprintf(stderr,
-                                        "String to print is too long!\n");
-                                exit(EXIT_FAILURE);
-                        }
-                }
+            printf("%c", zextest->memory[i & 0xffff]);
+            if (c++ > MAXIMUM_STRING_LENGTH)
+            {
+                fprintf(stderr, "String to print is too long!\n");
+                exit(EXIT_FAILURE);
+            }
         }
+    }
 }
