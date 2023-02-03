@@ -231,19 +231,14 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             /* 8-bit load group. */
 
             case LD_R_R:
-            {
                 R(Y(opcode)) = R(Z(opcode));
                 break;
-            }
 
             case LD_R_N:
-            {
                 READ_N(R(Y(opcode)));
                 break;
-            }
 
             case LD_R_INDIRECT_HL:
-            {
                 if (registers == state->register_table)
                 {
                     READ_BYTE(HL, R(Y(opcode)));
@@ -257,10 +252,8 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
                     elapsed_cycles += 5;
                 }
                 break;
-            }
 
             case LD_INDIRECT_HL_R:
-            {
                 if (registers == state->register_table)
                 {
                     WRITE_BYTE(HL, R(Z(opcode)));
@@ -274,7 +267,6 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
                     elapsed_cycles += 5;
                 }
                 break;
-            }
 
             case LD_INDIRECT_HL_N:
             {
@@ -300,16 +292,12 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             }
 
             case LD_A_INDIRECT_BC:
-            {
                 READ_BYTE(BC, A);
                 break;
-            }
 
             case LD_A_INDIRECT_DE:
-            {
                 READ_BYTE(DE, A);
                 break;
-            }
 
             case LD_A_INDIRECT_NN:
             {
@@ -320,16 +308,12 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             }
 
             case LD_INDIRECT_BC_A:
-            {
                 WRITE_BYTE(BC, A);
                 break;
-            }
 
             case LD_INDIRECT_DE_A:
-            {
                 WRITE_BYTE(DE, A);
                 break;
-            }
 
             case LD_INDIRECT_NN_A:
             {
@@ -373,10 +357,8 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             /* 16-bit load group. */
 
             case LD_RR_NN:
-            {
                 READ_NN(RR(P(opcode)));
                 break;
-            }
 
             case LD_HL_INDIRECT_NN:
             {
@@ -411,46 +393,34 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             }
 
             case LD_SP_HL:
-            {
                 SP = HL_IX_IY;
                 elapsed_cycles += 2;
                 break;
-            }
 
             case PUSH_SS:
-            {
                 PUSH(SS(P(opcode)));
                 elapsed_cycles++;
                 break;
-            }
 
             case POP_SS:
-            {
                 POP(SS(P(opcode)));
                 break;
-            }
 
             /* Exchange, block transfer and search group. */
 
             case EX_DE_HL:
-            {
                 EXCHANGE(DE, HL);
                 break;
-            }
 
             case EX_AF_AF_PRIME:
-            {
                 EXCHANGE(AF, state->alternates[Z80_AF]);
                 break;
-            }
 
             case EXX:
-            {
                 EXCHANGE(BC, state->alternates[Z80_BC]);
                 EXCHANGE(DE, state->alternates[Z80_DE]);
                 EXCHANGE(HL, state->alternates[Z80_HL]);
                 break;
-            }
 
             case EX_INDIRECT_SP_HL:
             {
@@ -611,10 +581,8 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             /* 8-bit arithmetic and logical group. */
 
             case ADD_R:
-            {
                 ADD(R(Z(opcode)));
                 break;
-            }
 
             case ADD_N:
             {
@@ -633,10 +601,8 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             }
 
             case ADC_R:
-            {
                 ADC(R(Z(opcode)));
                 break;
-            }
 
             case ADC_N:
             {
@@ -655,10 +621,8 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             }
 
             case SUB_R:
-            {
                 SUB(R(Z(opcode)));
                 break;
-            }
 
             case SUB_N:
             {
@@ -677,10 +641,8 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             }
 
             case SBC_R:
-            {
                 SBC(R(Z(opcode)));
                 break;
-            }
 
             case SBC_N:
             {
@@ -699,10 +661,8 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             }
 
             case AND_R:
-            {
                 AND(R(Z(opcode)));
                 break;
-            }
 
             case AND_N:
             {
@@ -721,10 +681,8 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             }
 
             case OR_R:
-            {
                 OR(R(Z(opcode)));
                 break;
-            }
 
             case OR_N:
             {
@@ -743,10 +701,8 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             }
 
             case XOR_R:
-            {
                 XOR(R(Z(opcode)));
                 break;
-            }
 
             case XOR_N:
             {
@@ -765,10 +721,8 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             }
 
             case CP_R:
-            {
                 CP(R(Z(opcode)));
                 break;
-            }
 
             case CP_N:
             {
@@ -787,10 +741,8 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             }
 
             case INC_R:
-            {
                 INC(R(Y(opcode)));
                 break;
-            }
 
             case INC_INDIRECT_HL:
             {
@@ -818,15 +770,12 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             }
 
             case DEC_R:
-            {
                 DEC(R(Y(opcode)));
                 break;
-            }
 
             case DEC_INDIRECT_HL:
             {
                 int x;
-
                 if (registers == state->register_table)
                 {
                     READ_BYTE(HL, x);
@@ -854,7 +803,6 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             case DAA:
             {
                 int a, c, d;
-
                 /* The following algorithm is from
                 * comp.sys.sinclair's FAQ.
                 */
@@ -866,10 +814,8 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
                 }
                 else
                     c = d = 0;
-
                 if ((a & 0x0f) > 0x09 || (F & Z80_H_FLAG))
                     d += 0x06;
-
                 A += F & Z80_N_FLAG ? -d : +d;
                 F = SZYXP_FLAGS_TABLE[A] | ((A ^ a) & Z80_H_FLAG) | (F & Z80_N_FLAG) | c;
                 break;
@@ -879,7 +825,6 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             {
                 A = ~A;
                 F = (F & (SZPV_FLAGS | Z80_C_FLAG))
-
 #ifndef Z80_DOCUMENTED_FLAGS_ONLY
                     | (A & YX_FLAGS)
 #endif
@@ -926,9 +871,7 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             }
 
             case NOP:
-            {
                 break;
-            }
 
             case HALT:
             {
@@ -988,7 +931,6 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
                 */
                 if ((Y(opcode) & 0x03) <= 0x01)
                     state->im = Z80_INTERRUPT_MODE_0;
-
                 else if (!(Y(opcode) & 1))
                     state->im = Z80_INTERRUPT_MODE_1;
                 else
@@ -1080,11 +1022,9 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             /* Rotate and shift group. */
 
             case RLCA:
-            {
                 A = (A << 1) | (A >> 7);
                 F = (F & SZPV_FLAGS) | (A & (YX_FLAGS | Z80_C_FLAG));
                 break;
-            }
 
             case RLA:
             {
@@ -1127,10 +1067,8 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             }
 
             case RLC_R:
-            {
                 RLC(R(Z(opcode)));
                 break;
-            }
 
             case RLC_INDIRECT_HL:
             {
@@ -1160,10 +1098,8 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             }
 
             case RL_R:
-            {
                 RL(R(Z(opcode)));
                 break;
-            }
 
             case RL_INDIRECT_HL:
             {
@@ -1192,10 +1128,8 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             }
 
             case RRC_R:
-            {
                 RRC(R(Z(opcode)));
                 break;
-            }
 
             case RRC_INDIRECT_HL:
             {
@@ -1224,10 +1158,8 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             }
 
             case RR_R:
-            {
                 RR_INSTRUCTION(R(Z(opcode)));
                 break;
-            }
 
             case RR_INDIRECT_HL:
             {
@@ -1256,10 +1188,8 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             }
 
             case SLA_R:
-            {
                 SLA(R(Z(opcode)));
                 break;
-            }
 
             case SLA_INDIRECT_HL:
             {
@@ -1288,10 +1218,8 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             }
 
             case SLL_R:
-            {
                 SLL(R(Z(opcode)));
                 break;
-            }
 
             case SLL_INDIRECT_HL:
             {
@@ -1320,15 +1248,12 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             }
 
             case SRA_R:
-            {
                 SRA(R(Z(opcode)));
                 break;
-            }
 
             case SRA_INDIRECT_HL:
             {
                 int x;
-
                 if (registers == state->register_table)
                 {
                     READ_BYTE(HL, x);
@@ -1353,10 +1278,8 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             }
 
             case SRL_R:
-            {
                 SRL(R(Z(opcode)));
                 break;
-            }
 
             case SRL_INDIRECT_HL:
             {
@@ -1439,10 +1362,8 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             }
 
             case SET_B_R:
-            {
                 R(Z(opcode)) |= 1 << Y(opcode);
                 break;
-            }
 
             case SET_B_INDIRECT_HL:
             {
@@ -1452,7 +1373,6 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
                     READ_BYTE(HL, x);
                     x |= 1 << Y(opcode);
                     WRITE_BYTE(HL, x);
-
                     elapsed_cycles++;
                 }
                 else
@@ -1472,10 +1392,8 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             }
 
             case RES_B_R:
-            {
                 R(Z(opcode)) &= ~(1 << Y(opcode));
                 break;
-            }
 
             case RES_B_INDIRECT_HL:
             {
@@ -1557,17 +1475,14 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
                     Z80_FETCH_BYTE(pc, e);
 #endif
                     pc++;
-
                     elapsed_cycles += 3;
                 }
                 break;
             }
 
             case JP_HL:
-            {
                 pc = HL_IX_IY;
                 break;
-            }
 
             case DJNZ_E:
             {
@@ -1623,17 +1538,13 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             }
 
             case RET:
-            {
                 POP(pc);
                 break;
-            }
 
             case RET_CC:
             {
                 if (CC(Y(opcode)))
-                {
                     POP(pc);
-                }
                 elapsed_cycles++;
                 break;
             }
@@ -1653,17 +1564,14 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
                 goto stop_emulation;
 #else
                 break;
-
 #endif
             }
 
             case RST_P:
-            {
                 PUSH(pc);
                 pc = RST_TABLE[Y(opcode)];
                 elapsed_cycles++;
                 break;
-            }
 
             /* Input and output group. */
             
@@ -1847,7 +1755,6 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             /* Prefix group. */
 
             case CB_PREFIX:
-            {
                 /* Special handling if the 0xcb prefix is
                 * prefixed by a 0xdd or 0xfd prefix.
                 */
@@ -1866,10 +1773,8 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
                 }
                 instruction = CB_INSTRUCTION_TABLE[opcode];
                 goto emulate_next_instruction;
-            }
 
             case DD_PREFIX:
-            {
                 registers = state->dd_register_table;
 #ifdef Z80_PREFIX_FAILSAFE
                 /* Ensure that at least number_cycles cycles
@@ -1893,10 +1798,8 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
                 pc++;
                 goto emulate_next_opcode;
 #endif
-            }
 
             case FD_PREFIX:
-            {
                 registers = state->fd_register_table;
 #ifdef Z80_PREFIX_FAILSAFE
                 if (elapsed_cycles < number_cycles)
@@ -1917,21 +1820,17 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
                 pc++;
                 goto emulate_next_opcode;
 #endif
-            }
 
             case ED_PREFIX:
-            {
                 registers = state->register_table;
                 Z80_FETCH_BYTE(pc, opcode);
                 pc++;
                 instruction = ED_INSTRUCTION_TABLE[opcode];
                 goto emulate_next_instruction;
-            }
 
             /* Special/pseudo instruction group. */
 
             case ED_UNDEFINED:
-            {
 #ifdef Z80_CATCH_ED_UNDEFINED
                 state->status = Z80_STATUS_FLAG_ED_UNDEFINED;
                 pc -= 2;
@@ -1939,7 +1838,6 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
 #else
                 break;
 #endif
-            }
         }
 
         if (elapsed_cycles >= number_cycles)
@@ -1950,6 +1848,5 @@ stop_emulation:
 
     state->r = (state->r & 0x80) | (r & 0x7f);
     state->pc = pc & 0xffff;
-
     return elapsed_cycles;
 }
