@@ -16,19 +16,20 @@
 #define CYCLES_PER_STEP (Z80_CPU_SPEED / 50)
 #define MAXIMUM_STRING_LENGTH 100
 
-static void emulate(char *filename, int beginAt, int endAt);
+static void emulate(char *filename, long beginAt, long endAt);
+static void LogState(ZEXTEST context);
 
 int main(int argc, char *argv[])
 {
-    int beginAt = 0;
-    int endAt = 0;
+    long beginAt = 0;
+    long endAt = 0;
     if (argc == 3)
     {
-        sscanf(argv[1], "%d", &beginAt);
-        sscanf(argv[2], "%d", &endAt);
+        beginAt = strtol(argv[1], NULL, 10);
+        endAt = strtol(argv[2], NULL, 10);
     }
 
-    printf("DEBUG: %d %d\n", beginAt, endAt);
+    printf("DEBUG: %ld %ld\n", beginAt, endAt);
     time_t start, stop;
     start = time(NULL);
     emulate("testfiles/zexdoc.com", beginAt, endAt);
@@ -40,7 +41,7 @@ int main(int argc, char *argv[])
 
 /* Emulate "zexdoc.com" or "zexall.com". */
 
-static void emulate(char *filename, int beginAt, int endAt)
+static void emulate(char *filename, long beginAt, long endAt)
 {
     FILE *file;
     long l;
@@ -77,31 +78,24 @@ static void emulate(char *filename, int beginAt, int endAt)
     Z80Reset(&context.state);
     context.state.pc = 0x100;
     total = 0.0;
-    int lastPC = 0;
-    int counter = 0;
-    int instruction = 0;
+    long counter = 0;
 
     do
     {
-        instruction = context.memory[context.state.pc];
-        total += Z80Emulate(&context.state, 1, &context);
-
-        counter++;
         if (endAt > 0 && counter >= beginAt)
         {
-            printf("\nLPC: %04x LOC:%02x%02x%02x%02x AF:%04x BC:%04x DE:%04x HL:%04x",
-                lastPC,
-                context.memory[lastPC],
-                context.memory[lastPC + 1],
-                context.memory[lastPC + 2],
-                context.memory[lastPC + 3],
-                context.state.registers.word[Z80_AF],
-                context.state.registers.word[Z80_BC],
-                context.state.registers.word[Z80_DE],
-                context.state.registers.word[Z80_HL]);
+            LogState(context);
+            total += Z80Emulate(&context.state, 1, &context);
+            printf("|");
+            LogState(context);
+            printf("\n");
+        }
+        else
+        {
+            total += Z80Emulate(&context.state, 1, &context);
         }
 
-        lastPC = context.state.pc;
+        counter++;
         if (endAt > 0 && counter >= endAt)
             break;
 
@@ -115,6 +109,36 @@ static void emulate(char *filename, int beginAt, int endAt)
         (int)(total / Z80_CPU_SPEED),
         total / ((double)3600 * Z80_CPU_SPEED));
 }
+
+static void LogState(ZEXTEST context)
+{
+    /*      M1  M2  M3  M4  M5   PC   AF   BC   DE   HL   IX   IY   SP   I    R    IM   */
+    int address = context.state.pc;
+    for(int i = 0; i < 5; i++)
+    {
+        printf("%02x", context.memory[address]);
+        address++;
+    }
+
+    printf(" %04x %04x %04x %04x %04x %04x %04x %04x %02x %02x %02x ",
+        context.state.pc,
+        context.state.registers.word[Z80_AF],
+        context.state.registers.word[Z80_BC],
+        context.state.registers.word[Z80_DE],
+        context.state.registers.word[Z80_HL],
+        context.state.registers.word[Z80_IX],
+        context.state.registers.word[Z80_IY],
+        context.state.registers.word[Z80_SP],
+        context.state.i,
+        context.state.r,
+        context.state.im);
+        int val = context.state.registers.byte[Z80_F];
+        for (int i = 7; 0 <= i; i--) 
+        {
+            printf("%c", (val & (1 << i)) ? '1' : '0');
+        }
+}
+
 
 /* Emulate CP/M bdos call 5 functions 2 (output character on screen) and 9
  * (output $-terminated string to screen).
