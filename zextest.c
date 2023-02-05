@@ -22,7 +22,7 @@ static void LogState(ZEXTEST context);
 int main(int argc, char *argv[])
 {
     long beginAt = 0;
-    long endAt = 0;
+    long endAt = 1000;
     if (argc == 3)
     {
         beginAt = strtol(argv[1], NULL, 10);

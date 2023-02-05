@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -ansi -pedantic -O2 -fomit-frame-pointer
+CFLAGS = -Wall -ansi -pedantic -Og -fomit-frame-pointer
 
 all: zextest
 
