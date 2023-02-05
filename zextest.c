@@ -48,7 +48,7 @@ static void emulate(char *filename, long beginAt, long endAt)
     ZEXTEST context;
     double total;
 
-    printf("Testing \"%s\"...\n", filename);
+    //printf("Testing \"%s\"...\n", filename);
     if ((file = fopen(filename, "rb")) == NULL)
     {
         fprintf(stderr, "Can't open file!\n");
@@ -97,7 +97,7 @@ static void emulate(char *filename, long beginAt, long endAt)
 
         counter++;
         if (endAt > 0 && counter >= endAt)
-            break;
+            exit(0);
 
     } while (!context.is_done);
 
