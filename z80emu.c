@@ -209,11 +209,11 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
     int pc, r;
     pc = state->pc;
     r = state->r & 0x7f;
+    int instruction = 0;
     goto start_emulation;
     for (;;)
     {
         void **registers;
-        int instruction;
         Z80_FETCH_BYTE(pc, opcode);
         pc++;
 

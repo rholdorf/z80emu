@@ -21,8 +21,9 @@ static void LogState(ZEXTEST context);
 
 int main(int argc, char *argv[])
 {
-    long beginAt = 3000;
-    long endAt = 4000;
+    long beginAt = 0;
+    long endAt = 0;
+    time_t start, stop;
     if (argc == 3)
     {
         beginAt = strtol(argv[1], NULL, 10);
@@ -30,7 +31,6 @@ int main(int argc, char *argv[])
     }
 
     printf("DEBUG: %ld %ld\n", beginAt, endAt);
-    time_t start, stop;
     start = time(NULL);
     emulate("testfiles/zexdoc.com", beginAt, endAt);
     stop = time(NULL);
@@ -48,7 +48,6 @@ static void emulate(char *filename, long beginAt, long endAt)
     ZEXTEST context;
     double total;
 
-    //printf("Testing \"%s\"...\n", filename);
     if ((file = fopen(filename, "rb")) == NULL)
     {
         fprintf(stderr, "Can't open file!\n");
@@ -82,7 +81,12 @@ static void emulate(char *filename, long beginAt, long endAt)
 
     do
     {
-        if (endAt > 0 && counter >= beginAt)
+        if (/*endAt > 0 && counter >= beginAt && */context.state.pc == 0x1d42 
+        && context.state.registers.word[Z80_AF] == 0x1f83
+        && context.state.registers.word[Z80_BC] == 0x98c0
+        && context.state.registers.word[Z80_DE] == 0x2fc2
+        && context.state.registers.word[Z80_HL] == 0x0103
+        && context.state.registers.word[Z80_SP] == 0x3bcd)
         {
             LogState(context);
             total += Z80Emulate(&context.state, 1, &context);
@@ -133,9 +137,9 @@ static void LogState(ZEXTEST context)
         context.state.r,
         context.state.im);
         int val = context.state.registers.byte[Z80_F];
-        for (int i = 7; 0 <= i; i--) 
+        for (int j = 7; 0 <= j; j--) 
         {
-            printf("%c", (val & (1 << i)) ? '1' : '0');
+            printf("%c", (val & (1 << j)) ? '1' : '0');
         }
 }
 
