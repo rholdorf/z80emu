@@ -17,4 +17,7 @@ typedef struct ZEXTEST
 } ZEXTEST;
 
 extern void SystemCall(ZEXTEST *zextest);
+extern void LogWriteByte(unsigned short address, unsigned char data);
+extern void LogWriteWord(unsigned short address, int data);
+
 #endif

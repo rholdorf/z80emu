@@ -112,6 +112,7 @@ extern "C"
 #define Z80_WRITE_BYTE(address, x)                            \
     {                                                         \
         ((ZEXTEST *)context)->memory[(address)&0xffff] = (x); \
+        LogWriteByte(address, (x));                                 \
     }
 
 #define Z80_WRITE_WORD(address, x)                   \
@@ -121,6 +122,7 @@ extern "C"
         memory = ((ZEXTEST *)context)->memory;       \
         memory[(address)&0xffff] = (x);              \
         memory[((address) + 1) & 0xffff] = (x) >> 8; \
+        LogWriteWord(address, (x));                        \
     }
 
 #define Z80_READ_WORD_INTERRUPT(address, x) Z80_READ_WORD((address), (x))

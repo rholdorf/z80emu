@@ -715,6 +715,9 @@ static int emulate(Z80_STATE *state, int opcode, int elapsed_cycles, int number_
             case XOR_INDIRECT_HL:
             {
                 int x;
+                int y;
+                int address = (state->registers.word[Z80_HL]);
+                int position = address & 0xffff;
                 READ_INDIRECT_HL(x);
                 XOR(x);
                 break;

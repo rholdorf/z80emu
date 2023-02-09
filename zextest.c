@@ -16,23 +16,27 @@
 #define CYCLES_PER_STEP (Z80_CPU_SPEED / 50)
 #define MAXIMUM_STRING_LENGTH 100
 
-static void emulate(char *filename, long beginAt, long endAt);
+static void emulate(char *filename, long beginAt, long endAt, int skip);
 static void LogState(ZEXTEST context);
+static int BreakPoint(ZEXTEST context, int pc, unsigned short af, unsigned short bc, unsigned short de, unsigned short hl, unsigned short ix, unsigned short iy, unsigned short sp, int r);
 
 int main(int argc, char *argv[])
 {
     long beginAt = 0;
     long endAt = 0;
+    int skip = 0;
     time_t start, stop;
-    if (argc == 3)
+    if (argc >= 3)
     {
         beginAt = strtol(argv[1], NULL, 10);
         endAt = strtol(argv[2], NULL, 10);
     }
+    if(argc == 4)
+        skip = strtol(argv[3], NULL, 10);
 
     printf("DEBUG: %ld %ld\n", beginAt, endAt);
     start = time(NULL);
-    emulate("testfiles/zexdoc.com", beginAt, endAt);
+    emulate("testfiles/zexall.com", beginAt, endAt, skip);
     stop = time(NULL);
     printf("Emulating zexdoc and zexall took a total of %d second(s).\n", (int)(stop - start));
 
@@ -41,12 +45,17 @@ int main(int argc, char *argv[])
 
 /* Emulate "zexdoc.com" or "zexall.com". */
 
-static void emulate(char *filename, long beginAt, long endAt)
+static void emulate(char *filename, long beginAt, long endAt, int skip)
 {
     FILE *file;
     long l;
     ZEXTEST context;
     double total;
+    long counter;
+    unsigned short newTestAddress;
+    unsigned char low;
+    unsigned char high;
+    int i;
 
     if ((file = fopen(filename, "rb")) == NULL)
     {
@@ -66,28 +75,34 @@ static void emulate(char *filename, long beginAt, long endAt)
      */
     context.memory[0] = 0xd3; /* OUT N, A */
     context.memory[1] = 0x00;
-
     context.memory[5] = 0xdb; /* IN A, N */
     context.memory[6] = 0x00;
     context.memory[7] = 0xc9; /* RET */
 
     context.is_done = 0;
 
+    /* pula o numero de testes especificado */
+    newTestAddress = (0x013A + (skip * 2)) & 0xffff;
+    high = (unsigned char)((newTestAddress >> 8) & 0xff);
+    low = (unsigned char)(newTestAddress & 0x00ff);
+    context.memory[0x0120] = low;
+    context.memory[0x0121] = high;
+
     /* Emulate. */
     Z80Reset(&context.state);
     context.state.pc = 0x100;
     total = 0.0;
-    long counter = 0;
+    counter = 0;
 
     do
     {
-        if (/*endAt > 0 && counter >= beginAt && */context.state.pc == 0x1d42 
-        && context.state.registers.word[Z80_AF] == 0x1f83
-        && context.state.registers.word[Z80_BC] == 0x98c0
-        && context.state.registers.word[Z80_DE] == 0x2fc2
-        && context.state.registers.word[Z80_HL] == 0x0103
-        && context.state.registers.word[Z80_SP] == 0x3bcd)
+        /* 1e52 f008 1086 0003 1e88 7acc 9dfc c8e4 00 77 00 */
+        if (endAt > 0 && counter >= beginAt)
         {
+            /*if(BreakPoint(context, 0x1e52, 0xf008, 0x1086, 0x0003, 0x1e88, 0x7acc, 0x9dfc, 0xc8e4, 0x77) == 1)
+            {
+            }*/
+
             LogState(context);
             total += Z80Emulate(&context.state, 1, &context);
             printf("|");
@@ -114,11 +129,28 @@ static void emulate(char *filename, long beginAt, long endAt)
         total / ((double)3600 * Z80_CPU_SPEED));
 }
 
+static int BreakPoint(ZEXTEST context, int pc, unsigned short af, unsigned short bc, unsigned short de, unsigned short hl, unsigned short ix, unsigned short iy, unsigned short sp, int r)
+{
+    if (context.state.pc == pc
+        && context.state.registers.word[Z80_AF] == af
+        && context.state.registers.word[Z80_BC] == bc
+        && context.state.registers.word[Z80_DE] == de
+        && context.state.registers.word[Z80_HL] == hl
+        && context.state.registers.word[Z80_IX] == ix
+        && context.state.registers.word[Z80_IY] == iy
+        && context.state.registers.word[Z80_SP] == sp
+        && context.state.r == r)
+        return 1;
+
+    return 0;
+}
+
 static void LogState(ZEXTEST context)
 {
     /*      M1  M2  M3  M4  M5   PC   AF   BC   DE   HL   IX   IY   SP   I    R    IM   */
+    int i, j, val;
     int address = context.state.pc;
-    for(int i = 0; i < 5; i++)
+    for(i = 0; i < 5; i++)
     {
         printf("%02x", context.memory[address]);
         address++;
@@ -136,8 +168,8 @@ static void LogState(ZEXTEST context)
         context.state.i,
         context.state.r,
         context.state.im);
-        int val = context.state.registers.byte[Z80_F];
-        for (int j = 7; 0 <= j; j--) 
+        val = context.state.registers.byte[Z80_F];
+        for (j = 7; 0 <= j; j--) 
         {
             printf("%c", (val & (1 << j)) ? '1' : '0');
         }
@@ -165,4 +197,14 @@ void SystemCall(ZEXTEST *zextest)
             }
         }
     }
+}
+
+void LogWriteByte(unsigned short address, unsigned char data)
+{
+    printf("[%04x %02x]", address, data);
+}
+
+void LogWriteWord(unsigned short address, int data)
+{
+    printf("[%04x %04x]", address, data);
 }

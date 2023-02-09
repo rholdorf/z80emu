@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -ansi -pedantic -g -m64
+CFLAGS = -Wall -ansi -pedantic -O0 -g3 -m64
 
 all: zextest
 
