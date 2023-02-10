@@ -95,6 +95,7 @@ extern "C"
 #define Z80_READ_BYTE(address, x)                             \
     {                                                         \
         (x) = ((ZEXTEST *)context)->memory[(address)&0xffff]; \
+        LogReadByte(address, x);                              \
     }
 
 #define Z80_FETCH_BYTE(address, x) Z80_READ_BYTE((address), (x))
@@ -105,6 +106,7 @@ extern "C"
                                                                                   \
         memory = ((ZEXTEST *)context)->memory;                                    \
         (x) = memory[(address)&0xffff] | (memory[((address) + 1) & 0xffff] << 8); \
+        LogReadWord(address, x);                                                  \
     }
 
 #define Z80_FETCH_WORD(address, x) Z80_READ_WORD((address), (x))
