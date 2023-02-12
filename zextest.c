@@ -99,9 +99,11 @@ static void emulate(char *filename, long beginAt, long endAt, int skip)
         /* 1e52 f008 1086 0003 1e88 7acc 9dfc c8e4 00 77 00 */
         if (endAt > 0 && counter >= beginAt)
         {
-            /*if(BreakPoint(context, 0x1e52, 0xf008, 0x1086, 0x0003, 0x1e88, 0x7acc, 0x9dfc, 0xc8e4, 0x77) == 1)
+            /*
+            if(BreakPoint(context, 0x1ae5, 0x2224 , 0x0009 , 0x1dda , 0x014d , 0x0000 , 0x0000 , 0xc8fc , 0x1c ) == 1)
             {
-            }*/
+            }
+            */
             LogState(context);
             total += Z80Emulate(&context.state, 1, &context);
             printf("|");
@@ -200,20 +202,20 @@ void SystemCall(ZEXTEST *zextest)
 
 void LogWriteByte(unsigned short address, unsigned char data)
 {
-    printf("[W%04x %02x]", address, data);
+    /*printf("[W%04x %02x]", address, data);*/
 }
 
 void LogWriteWord(unsigned short address, int data)
 {
-    printf("[W%04x %04x]", address, data);
+    /*printf("[W%04x %04x]", address, data);*/
 }
 
 void LogReadByte(unsigned short address, unsigned char data)
 {
-    printf("[R%04x %02x]", address, data);
+    /*printf("[R%04x %02x]", address, data);*/
 }
 
 void LogReadWord(unsigned short address, int data)
 {
-    printf("[R%04x %04x]", address, data);
+    /*printf("[R%04x %04x]", address, data);*/
 }
