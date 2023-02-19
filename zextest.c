@@ -34,7 +34,6 @@ int main(int argc, char *argv[])
     if(argc == 4)
         skip = strtol(argv[3], NULL, 10);
 
-    printf("DEBUG: %ld %ld\n", beginAt, endAt);
     start = time(NULL);
     emulate("testfiles/zexall.com", beginAt, endAt, skip);
     stop = time(NULL);
@@ -57,6 +56,7 @@ static void emulate(char *filename, long beginAt, long endAt, int skip)
     unsigned char high;
     int i;
 
+    printf("Testing \"%s\"...\n", filename);
     if ((file = fopen(filename, "rb")) == NULL)
     {
         fprintf(stderr, "Can't open file!\n");
@@ -72,7 +72,8 @@ static void emulate(char *filename, long beginAt, long endAt, int skip)
     /* Patch the memory of the program. Reset at 0x0000 is trapped by an
      * OUT which will stop emulation. CP/M bdos call 5 is trapped by an IN.
      * See Z80_INPUT_BYTE() and Z80_OUTPUT_BYTE() definitions in z80user.h.
-     */
+    */
+    
     context.memory[0] = 0xd3; /* OUT N, A */
     context.memory[1] = 0x00;
     context.memory[5] = 0xdb; /* IN A, N */
@@ -96,31 +97,14 @@ static void emulate(char *filename, long beginAt, long endAt, int skip)
 
     do
     {
-        /* 1e52 f008 1086 0003 1e88 7acc 9dfc c8e4 00 77 00 */
-        if (endAt > 0 && counter >= beginAt)
-        {
-            /*
-            if(BreakPoint(context, 0x1ae5, 0x2224 , 0x0009 , 0x1dda , 0x014d , 0x0000 , 0x0000 , 0xc8fc , 0x1c ) == 1)
-            {
-            }
-            */
-            LogState(context);
-            total += Z80Emulate(&context.state, 1, &context);
-            printf("|");
-            LogState(context);
-            printf("\n");
-        }
-        else
-        {
-            total += Z80Emulate(&context.state, 1, &context);
-        }
-
+        total += Z80Emulate(&context.state, 1, &context);
         counter++;
         if (endAt > 0 && counter >= endAt)
             exit(0);
 
     } while (!context.is_done);
 
+    /*
     printf("\n%.0f cycle(s) emulated.\n"
         "For a Z80 running at %.2fMHz, "
         "that would be %d second(s) or %.2f hour(s).\n",
@@ -128,6 +112,7 @@ static void emulate(char *filename, long beginAt, long endAt, int skip)
         Z80_CPU_SPEED / 1000000.0,
         (int)(total / Z80_CPU_SPEED),
         total / ((double)3600 * Z80_CPU_SPEED));
+    */
 }
 
 static int BreakPoint(ZEXTEST context, int pc, unsigned short af, unsigned short bc, unsigned short de, unsigned short hl, unsigned short ix, unsigned short iy, unsigned short sp, int r)
